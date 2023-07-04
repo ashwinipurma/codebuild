@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  WebServerKMSSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: "Enable HTTP access via port 80 + SSH access"
+      Tags:
+        - Key: Name
+          Value: SG
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: 80
+        IpProtocol: tcp
+        ToPort: 80
+      - CidrIp: 0.0.0.0/0
+        FromPort: 22
+        IpProtocol: tcp
+        ToPort: 22
+            
+  MyKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: My KMS key
+      KeyPolicy:
+        Version: "2012-10-17"
+        Id: key-default-1
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::372179755649:root
+            Action: 'kms:*'
+            Resource: "*"
+          - Sid: Allow administration of the key
+            Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::372179755649:root
+            Action:
+              - kms:Create*
+              - kms:Describe*
+              - kms:Enable*
+              - kms:List*
+              - kms:Put*
+              - kms:Update*
+              - kms:Revoke*
+              - kms:Disable*
+              - kms:Get*
+              - kms:Delete*
+              - kms:TagResource
+              - kms:UntagResource
+            Resource: "*"
+          - Sid: Allow use of the key
+            Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::372179755649:root
+            Action:
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+              - kms:DescribeKey
+              - kms:CreateKey
+            Resource: "*"
+
+
+        # KeyPolicy:
+        #   Version: "2012-10-17"
+        #   Id: "DlmKmsKeyPolicy"
+        #   Statement:
+        #     - Sid: "Multi-region KMS key for encrypting DLM AMIs"
+        #       Effect: "Allow"
+        #       Principal:
+        #         AWS:
+        #           Fn::Join:
+        #             - ""
+        #             -
+        #               - "arn:aws:iam::"
+        #               - Ref: "AWS::AccountId"
+        #               - ":root"
+        #       Action: "kms:*"
+        #       Resource: "*"
